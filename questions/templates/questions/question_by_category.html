@@ -1,0 +1,35 @@
+{% extends 'questions/base.html' %}
+{% load static %}
+
+{% block main %}
+
+    <ul>
+{% for question in questions %}
+    {% for category in categories %}
+    {% if category %}
+        {% if category == question.category %}
+        <li>
+            <a href="{{ question.get_absolute_url }}">
+                {{ question.question_text }}
+            </a>
+        </li>
+
+        {% endif %}
+    {% endif %}
+    {% endfor %}
+{% endfor %}
+{% for quiz in quizes %}
+    {% if quiz %}
+        {% if category == quiz.category %}
+        <li>
+            <a href="{{ quiz.get_absolute_url }}">
+                {{ quiz.title }}
+            </a>
+        </li>
+        {% endif %}
+
+    {% endif %}
+{% endfor %}
+
+    </ul>
+{% endblock%}

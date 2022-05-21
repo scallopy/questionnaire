@@ -1,0 +1,27 @@
+{% extends 'questions/base.html' %}
+
+{% load static %}
+{% load django_markdown %}
+
+{% block main %}
+<div class="row mt-4" style="background-image:none; margin-right:0; margin-left:0;">
+    <h1>{{ quiz.title }}</h1>
+</div>
+<form method="post" class="form">
+   {% csrf_token %}
+    {{form}}
+      <button type="submit" class="btn btn-primary">
+        {% block savetext %}
+          Save
+        {% endblock %}
+      </button>
+      {% if form.instance.pk %}
+        {% block delete %}
+          {% if delete_label %}
+            <a class="btn btn-danger" href="{% url delete_label form.instance.pk %}">
+              "Delete"</a>
+          {% endif %}
+        {% endblock %}
+      {% endif %}
+</form>
+{% endblock %}

@@ -1,0 +1,12 @@
+{% extends 'questions/base.html' %}
+{% load static %}
+
+{% block main %}
+<h1>Question:</h1>
+        <h2>
+            <a href="{{ question.get_absolute_url }}">
+                {{ question.question_text }}
+            </a>
+        </h2>
+
+{% endblock%}

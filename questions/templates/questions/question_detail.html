@@ -1,0 +1,48 @@
+{% extends 'questions/base.html' %}
+
+{% load static %}
+{% load django_markdown %}
+
+{% block extrahead %}{{ form.media }}{% endblock %}
+{% block main %}
+
+<form action="{% url 'vote' question.id %}" method="post">
+{% csrf_token %}
+<fieldset>
+    <legend><h1>{{ question.question_text }}</h1></legend>
+    {{ question.answer|safe }}
+    {% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
+{% if not question.answer %}
+<a href="{% url "add-answer" question.id %}" style="text-decoration:none; color:#1e1e14;"><b>
+    Put your answer here...
+</b></a>
+{% else %}
+<button>
+<a href="{% url 'update-answer' question.id %}"
+    onclick=" return confirm('Are you sure ?')"
+    >
+    Update answer
+</a>
+</button>
+
+</fieldset>
+    <div class="choice">
+    {% for choice in question.choice_set.all %}
+        <input type="radio" name="choice" id="choice{{ forloop.counter }}" value="{{ choice.id }}">
+        <label for="choice{{ forloop.counter }}">{{ choice.choice_text }}</label><br>
+    {% endfor %}
+    </div>
+
+<input type="submit" value="Vote">
+</form>
+<br>
+<button>
+<a href="{% url 'delete-answer' question.id %}"
+    onclick=" return confirm('Are you sure ?')"
+    >
+    Delete answer
+</a>
+</button>
+
+{% endif %}
+{% endblock %}

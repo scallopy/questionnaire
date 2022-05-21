@@ -1,0 +1,19 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <title>My Interviews</title>
+        <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}">
+        {% block extrahead %}{% endblock %}
+    </head>
+    <body>
+        <header>
+            <h1>Everything about me</h1>
+            {% block nav %}{% endblock %}
+        </header>
+        <main>
+            {% block main %}{% endblock %}
+        </main>
+    </body>
+</html>

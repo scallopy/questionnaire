@@ -1,0 +1,89 @@
+{% extends 'questions/base.html' %}
+{% load survey_extras %}
+
+{% load static %}
+{% load django_markdown %}
+
+{% block main %}
+<div class="row mt-4" style="background-image:none; margin-right:0; margin-left:0;">
+    <h1>{{ quiz.title }}</h1>
+    <h3>quiz_detail.html</h3>
+</div>
+<form method="post" class="form">
+   {% csrf_token %}
+   {% for question in questions %}
+<table class="table table-hover">
+    <!--<thead>
+      <tr>
+        <th> Question  </th>
+        <th> Answers </th>
+      </tr>
+    </thead> -->
+    <tbody>
+{% for form in response_form %}
+        <tr class="{% if form.errors%} danger {% endif %}">
+
+            <td>
+                {{form.step}}{{ form.label|safe }}
+	            {% if form.field.required %}
+	                <span class="glyphicon glyphicon-asterisk" style="color:red"> </span>
+	            {% endif %}
+	            <span class="help-inline" style="color:red">
+	                <strong> {% for error in  form.errors %}{{ error }}{% endfor %} </strong>
+	            </span> <br>
+                {% if form.field.widget.input_type == 'select' %}
+                Select:
+                <select name="{{form.choice}}"{% if form.field.widget.attrs.disabled %} disabled{% endif %}>
+                {% endif %}
+	            {% for field in form.field.choices %}
+		            Field: {{ field }} <br>
+                {% endfor%}
+                {% if form.field.widget.input_type == 'select' %}
+                </select>
+                {% endif %}
+            </td>
+        </tr>
+{% endfor %}
+    </tbody>
+</table>
+{% endfor %}
+      <button type="submit" class="btn btn-primary">
+        {% block savetext %}
+          Save
+        {% endblock %}
+      </button>
+      {% if form.instance.pk %}
+        {% block delete %}
+          {% if delete_label %}
+            <a class="btn btn-danger" href="{% url delete_label form.instance.pk %}">
+              "Delete"</a>
+          {% endif %}
+        {% endblock %}
+      {% endif %}
+</form>
+<div class="row mt-4" style="background-image:none;">
+    <h3>Published at: {{ quiz.pub_date }}</h3>
+    <p>Questions: {{questions_count}}
+</div>
+
+<form method="post" class="form">
+{% for question in questions %}
+
+<div class="" style="border:1px solid black; margin-right:10%; padding-left:10px;">
+<p> {{question.position}}. {{question.question_text }}</p>
+<code> {{question.description|safe}}</code>
+<hr>
+<p>Select answer: </p>
+{% for choice in question.get_choices %}
+<br>
+<input type="radio" name="choice" id="choice{{ forloop.counter }}" value="{{ choice }}">
+<label for="choice{{ forloop.counter }}"><code>{{ choice|linebreaks }}</code></label>
+
+{% endfor %}
+
+</div>
+<p>Answer position: {{question.answer_position}}</p>
+<p>Selected Answer: {{choice.selected_answer}}<p>
+{% endfor %}
+
+{% endblock %}

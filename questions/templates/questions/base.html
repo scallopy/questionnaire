@@ -1,0 +1,18 @@
+{% extends 'sites/index.html'%}
+{% load static %}
+
+{% block nav %}
+    <ul class="nav">
+        <li><a href="/question/">Questions</a></li>
+    </ul>
+    {% for category in categories %}
+        {% if category %}
+        <ul class="nav">
+            <li><a href="{{ category.get_absolute_url}}">{{ category.category_name}}</a></li>
+        </ul>
+        {% endif %}
+    {% endfor %}
+{% endblock%}
+
+
+{% block main %}{% endblock%}
