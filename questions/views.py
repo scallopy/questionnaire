@@ -41,7 +41,7 @@ class QuizesList(generic.ListView):
 
 class QuizDetail(generic.View):
     def get(self, request, *args, **kwargs):
-        print("Kwargs: ", kwargs)
+        # print("Kwargs: ", kwargs)
         quiz = get_object_or_404(Quiz, pk=kwargs["pk"])
 
         step = kwargs.get("step", 0)
@@ -57,10 +57,10 @@ class QuizDetail(generic.View):
         context = {}
         for question in questions:
             questions_count += 1
-            print("Answer position:", question.answer_position)
+            # print("Answer position:", question.answer_position)
             question_choices = question.get_clean_choices()
             context['choices'] = question_choices
-            print("Question choices:", question_choices)
+            # print("Question choices:", question_choices)
             for choice in question_choices:
                 print("Choice: ", choice)
 

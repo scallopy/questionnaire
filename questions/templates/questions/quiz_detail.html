@@ -5,45 +5,49 @@
 {% load django_markdown %}
 
 {% block main %}
+<br>
 <div class="row mt-4" style="background-image:none; margin-right:0; margin-left:0;">
     <h1>{{ quiz.title }}</h1>
-    <h3>quiz_detail.html</h3>
+    <h3>{{ quiz.pub_date}}</h3>
 </div>
 <form method="post" class="form">
    {% csrf_token %}
-   {% for question in questions %}
-<table class="table table-hover">
-    <!--<thead>
-      <tr>
-        <th> Question  </th>
-        <th> Answers </th>
-      </tr>
-    </thead> -->
-    <tbody>
-{% for form in response_form %}
-        <tr class="{% if form.errors%} danger {% endif %}">
+    <table class="table table-hover">
+        <!--<thead>
+        <tr>
+            <th> Question  </th>
+            <th> Answers </th>
+        </tr>
+        </thead> -->
+        <tbody>
+        {% for form in response_form %}
+        <tr class="{% if form.errors%} danger {% endif %}"
+            style="border:1px solid black; margin-right:10%; padding-left:10px;">
 
-            <td>
-                {{form.step}}{{ form.label|safe }}
+            <td class="" style="border:1px solid black; margin-right:10%; padding-left:10px;">
+                {{ form.label|safe }}
 	            {% if form.field.required %}
 	                <span class="glyphicon glyphicon-asterisk" style="color:red"> </span>
 	            {% endif %}
 	            <span class="help-inline" style="color:red">
 	                <strong> {% for error in  form.errors %}{{ error }}{% endfor %} </strong>
 	            </span> <br>
+                <hr>
                 {% if form.field.widget.input_type == 'select' %}
                 Select:
                 <select name="{{form.choice}}"{% if form.field.widget.attrs.disabled %} disabled{% endif %}>
                 {% endif %}
+                {% if form.field.choices %}
 	            {% for field in form.field.choices %}
-		            Field: {{ field }} <br>
+                <input type="radio" name="choice" id="choice{{ forloop.counter }}" value="{{ choice }}">
+		        <code>{{ field|linebreaks }} </code><br>
                 {% endfor%}
+                {% endif %}
                 {% if form.field.widget.input_type == 'select' %}
                 </select>
                 {% endif %}
             </td>
         </tr>
-{% endfor %}
     </tbody>
 </table>
 {% endfor %}

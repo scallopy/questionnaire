@@ -104,8 +104,12 @@ class ResponseForm(models.ModelForm):
             return forms.ChoiceField(**kwargs)
 
     def add_question(self, question, data):
+        print("Add QUESTION")
         my_label = str(question.position) + ". " + question.question_text
-        kwargs = {"label": my_label}
+        label = my_label + question.description
+        kwargs = {"label": label}
+
+        print("Kwargs: ", kwargs)
         initial = self.get_question_initial(question, data)
         if initial:
             kwargs["initial"] = initial
@@ -117,12 +121,14 @@ class ResponseForm(models.ModelForm):
             kwargs["widget"] = widget
         field = self.get_question_field(question, **kwargs)
 
+        print("Kwargs: ", kwargs)
         if question.type == QuestionChoice.DATE:
             field.widget.attrs["class"] = "date"
         self.fields["question_%d" % question.pk] = field
 
     def has_next_step(self):
         if not self.quiz.is_all_inone_page():
+
             if self.step < self.steps_count - 1:
                 return True
         return False
