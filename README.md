@@ -1,10 +1,18 @@
-# Python 3.7.3
+# Questionnaire
+
+## Run Project:
+
+### Python3.7
+
+```bach
+virtualenv -p python3.8 venv --no-site-packages
+source venv/bin/activate
+python3.7 -m pip install -r requirements.txt
+```
 
 
-# To do:
+## To do:
 
-
-## 1. Create content for .gitignore
 
 ## 2. questions/context_procesors.py:
 
