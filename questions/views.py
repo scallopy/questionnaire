@@ -4,8 +4,9 @@ from django.http import HttpResponseRedirect
 # from django.template import loader
 from django.urls import reverse
 from django.views import generic
+from django.views.generic import TemplateView
 
-from .models import Question, Choice, QuestionChoice, Category, Quiz
+from .models import Question, Choice, QuestionChoice, Category, Quiz, Response
 from .forms import AnswerForm, ResponseForm
 
 import random
@@ -45,10 +46,11 @@ class QuizDetail(generic.View):
         quiz = get_object_or_404(Quiz, pk=kwargs["pk"])
 
         step = kwargs.get("step", 0)
+        print("Step: ", step)
         if quiz.is_all_in_one_page():
-            template_name = "questions/quiz_detail.html"
+            template_name = "questions/quiz_all_in_one.html"
         else:
-            template_name = "questions/quiz_questions.html"
+            template_name = "questions/quiz_all_in_one.html"
 
         form = ResponseForm(quiz=quiz, user=request.user, step=step)
 
@@ -73,8 +75,68 @@ class QuizDetail(generic.View):
             "category": quiz.category,
             "step": step,
         })
-
         return render(request, template_name, context)
+
+    def post(self, request, *args, **kwargs):
+        quiz = get_object_or_404(Quiz, pk=kwargs["pk"])
+        print("POST quiz: ", quiz)
+
+        print("1: ", request.user)
+        print("2: ", kwargs.get("step", 0))
+        print("3: ", request.POST)
+        form = ResponseForm(request.POST, quiz=quiz, user=request.user, step=kwargs.get("step", 0))
+        context = {"response_form": form, "quiz": quiz}
+        print("4: ", "Context: ", context)
+        if form.is_valid():
+            print("Form is valid!")
+            return self.treat_valid_form(form, kwargs, request, quiz)
+        print("Invalid form!")
+        return self.handle_invalid_form(context, form, request, quiz)
+
+    @staticmethod
+    def handle_invalid_form(context, form, request, quiz):
+        # LOGGER.info("Non valid form: <%s>", form)
+        template_name = "questions/quiz_all_in_one.html"
+        return render(request, template_name, context)
+
+    def treat_valid_form(self, form, kwargs, request, quiz):
+        session_key = "quiz_{}".format(kwargs["pk"])
+        if session_key not in request.session:
+            request.session[session_key] = {}
+        for key, value in list(form.cleaned_data.items()):
+            request.session[session_key][key] = value
+            request.session.modified = True
+        next_url = form.next_step_url()
+        response = None
+        if quiz.is_all_in_one_page():
+            response = form.save()
+        else:
+            # when it's the last step
+            if not form.has_next_step():
+                print("4.1: request.session", request.session[session_key])
+                print("4.2: quiz", quiz)
+                print("4.3: user", request.user)
+                save_form = ResponseForm(request.session[session_key], quiz=quiz, user=request.user)
+                print("Save form: ", save_form)
+                if save_form.is_valid():
+                    response = save_form.save()
+                else:
+                    LOGGER.warning("A step of the multipage form failed but should have been discovered before.")
+        # if there is a next step
+        if next_url is not None:
+            return redirect(next_url)
+        del request.session[session_key]
+        if response is None:
+            return redirect(reverse("quiz-list"))
+        next_ = request.session.get("next", None)
+        if next_ is not None:
+            if "next" in request.session:
+                del request.session["next"]
+            return redirect(next_)
+        print(response.pk)
+        return redirect("quiz-confirmation", pk=response.pk)
+
+
 """
 
 
@@ -151,6 +213,19 @@ class QuizDetail(generic.UpdateView):
         form.save()
         return super(Quiz, self).form_valid(form)
 """
+
+
+class ConfirmView(TemplateView):
+
+    template_name = "questions/confirm.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        print(context)
+        context["pk"] = kwargs["pk"]
+        context["response"] = Response.objects.get(pk=context["pk"])
+        return context
+
 
 def question_detail(request, pk):
     question = get_object_or_404(Question, pk=pk)

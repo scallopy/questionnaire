@@ -1,0 +1,61 @@
+{% extends 'questions/base.html' %}
+{% load survey_extras %}
+
+{% load static %}
+{% load django_markdown %}
+
+{% block main %}
+<br>
+<div class="row mt-4" style="background-image:none; margin-right:0; margin-left:0;">
+    <h1>{{ quiz.title }}</h1>
+    <h3>Category: {{ quiz.category}} | Published at: {{ quiz.pub_date}}</h3>
+</div>
+<form method="post" class="form">
+   {% csrf_token %}
+    <table class="table table-hover">
+        <!--<thead>
+        <tr>
+            <th> Question  </th>
+            <th> Answers </th>
+        </tr>
+        </thead> -->
+        <tbody>
+            {% for form in response_form %}
+            <tr class="{% if form.errors%} danger {% endif %}">
+
+                <td class="" style="border:1px solid black; margin-right:10%; padding-left:10px;">
+                    {% include 'questions/quiz_question.html' %}
+                </td>
+            </tr>
+
+            {% endfor %}
+        </tbody>
+</table>
+    {% if response_form.has_next_step %}
+        <input class="btn btn-default btn-lg"
+        type="submit"
+        value="Next!">
+    {% else %}
+        <input
+            class="btn btn-default btn-lg"
+            type="submit"
+            value="I'm done!"
+        >
+    {% endif %}
+{% comment %}
+      <button type="submit" class="btn btn-primary">
+        {% block savetext %}
+          Save
+        {% endblock %}
+      </button>
+      {% if form.instance.pk %}
+        {% block delete %}
+          {% if delete_label %}
+            <a class="btn btn-danger" href="{% url delete_label form.instance.pk %}">
+              "Delete"</a>
+          {% endif %}
+        {% endblock %}
+      {% endif %}
+{% endcomment %}
+</form>
+{% endblock %}

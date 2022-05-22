@@ -1,6 +1,8 @@
 import sys
 import datetime
 
+from django.contrib.auth.models import User
+
 from django.db import models
 from django.conf import settings
 from django.urls import reverse
@@ -204,12 +206,13 @@ class Choice(models.Model):
 
 class Response(models.Model):
     created = models.DateTimeField("Creation date", auto_now_add=True)
-    quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE, verbose_name="Quiz", related_name="responses")
+    quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE, verbose_name="Quiz", related_name="responses", null=True, blank=True)
+    user = models.ForeignKey(User, related_name="quiz_user", on_delete=models.SET_NULL, verbose_name="User", null=True, blank=True)
     interview_uuid = models.CharField("Interview unique identifier", max_length=36)
 
     class Meta:
-        verbose_name = "Set of answers to surveys"
-        verbose_name_plural = "Sets of answers to surveys"
+        verbose_name = "Set of answers to quiz"
+        verbose_name_plural = "Sets of answers to quiz"
 
     def __str__(self):
         msg = f"Response to {self.quiz} by {self.user}"

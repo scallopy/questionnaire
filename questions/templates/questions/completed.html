@@ -1,0 +1,10 @@
+{% extends 'questions/base.html' %}
+{% load survey_extras %}
+
+{% load static %}
+{% load django_markdown %}
+
+{% block main %}
+<h1>Quiz comleted</h1>
+<p> <a href="{% url 'quizes' %}">Back to quiz list</a> </p>
+{% endblock %}

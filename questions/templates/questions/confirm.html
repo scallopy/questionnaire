@@ -1,0 +1,16 @@
+{% extends 'questions/base.html' %}
+{% load survey_extras %}
+
+{% load static %}
+{% load django_markdown %}
+
+{% block title %}Quiz submitted{% endblock title %}
+
+{% block main %}
+<h1>Quiz submitted</h1>
+<p>
+    <div class="alert alert-success">
+       Thanks! Your answers have been saved.
+    </div>
+</p>
+{% endblock %}

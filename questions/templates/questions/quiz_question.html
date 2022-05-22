@@ -1,0 +1,63 @@
+{{ form.label|safe }}
+{% if form.field.required %}
+  <span class="glyphicon glyphicon-asterisk" style="color:red"> </span>
+{% endif %}
+<span class="help-inline" style="color:red">
+  <strong> {% for error in  form.errors %}{{ error }}{% endfor %} </strong>
+</span> <br>
+<hr>
+Field type: {{form.field.widget.input_type}}
+<hr>
+
+{% if form.field.widget.input_type == 'checkbox' %}
+    <p>Select all that apply:</p>
+    {% if form.field.choices %}
+    <div>
+        {% for field in form.field.choices %}
+        <div style="border: 1px solid grey; margin:5px; padding-left: 10px; display: flex;">
+        <input
+          type="checkbox"
+          name="{{form.name}}"
+          id="choice{{ forloop.counter }}"
+          value="{{ field }}">
+        <code style="padding-left:10px;">{{ field|linebreaks }} </code><br>
+        </div>
+        {% endfor%}
+    </div>
+    {% endif %}
+{% endif %}
+
+{% if form.field.widget.input_type == 'select' %}
+    <p>Select answer:</p>
+    {% if form.field.choices %}
+    {{form.field.initial_value}}
+    <select type="{{form.field.widget.input_type}}" name="{{form.name}}">
+        {% for field in form.field.choices %}
+          <option value="{{field}}">
+            <code>{{ field }} </code><br>
+          </option>
+        {% endfor%}
+        </select>
+    {% endif %}
+{% endif %}
+
+{% if form.field.widget.input_type == 'radio' %}
+    <p>Select answer:</p>
+    {% if form.field.choices %}
+    <div>
+        {% for field in form.field.choices %}
+        <div style="border: 1px solid grey; margin-left:0; padding-left: 10px; display: flex;">
+        <input type="radio" name="{{form.name}}" id="choice{{ forloop.counter }}" value="{{ field|linebreaks }}">
+        {{ choice }}
+        <code style="padding-left:10px;">{{ field|linebreaks }} </code><br>
+        </div>
+        {% endfor%}
+    </div>
+    {% endif %}
+{% endif %}
+{% if form.field.widget.input_type == 'text' %}
+<textarea type="{{form.field.widget.input_type}}" name="{{form.name}}", id="{{form.name}}" cols="50" rows="5" placeholder="Enter your answer here..."></textarea><br>
+{% endif %}
+{% if form.field.widget.input_type == 'file' %}
+    <input type="file" name={{form.name}}><br>
+{% endif %}

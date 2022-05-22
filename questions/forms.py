@@ -1,6 +1,8 @@
 from django import forms
 from django.forms import models
+from django.db.models import Prefetch
 from django.urls import reverse
+from django.utils.text import slugify
 from ckeditor_uploader.fields import RichTextUploadingField
 
 from .signals import quiz_completed
@@ -42,12 +44,14 @@ class ResponseForm(models.ModelForm):
             self.step = int(kwargs.pop("step"))
         except KeyError:
             self.step = None
+        print("1.1: ", "Quiz: ", self.quiz)
         super().__init__(*args, **kwargs)
         # self.uuid = uuid.uuid4().hex
 
         self.questions = QuestionChoice.objects.filter(
             quiz=self.quiz.pk).order_by('position')
         self.steps_count = len(self.questions)
+        print("1.2: ", "Steps count:", self.steps_count)
 
         self.response = False
         self.answers = False
@@ -67,8 +71,37 @@ class ResponseForm(models.ModelForm):
 
     def get_question_initial(self, question, data):
         initial = None
+        user=self.user
+        quiz=self.quiz
+        print(self.user)
+        print(self.quiz)
+        print(Response.objects.prefetch_related(Prefetch('user', queryset=self.user)))
+        try:
+            self.response = Response.objects.prefetch_related("user", "quiz").get(
+                user=self.user, quiz=self.quiz
+            )
+            print(self.response)
+        except Response.DoesNotExist:
+            self.response = None
+        print("Response: ", self.response)
+
+        if question.type == QuestionChoice.SELECT_MULTIPLE:
+            initial = []
+            if answer.body == "[]":
+                pass
+            elif "[" in answer.body and "]" in answer.body:
+                initial = []
+                unformated_choices = answer.body[1:-1].strip()
+                for unformated_choice in unformated_choices.split(settings.CHOICES_SEPARATOR):
+                    choice = unformated_choice.split("'")[1]
+                    initial.append(slugify(choice))
+            else:
+                initial.append(slugify(answer.body))
+        else:
+            initial = answer.body
         if data:
             initial = data.get("question_%d" % question.pk)
+        print("Initial: ", initial)
         return initial
 
     def get_question_widget(self, question):
@@ -94,7 +127,7 @@ class ResponseForm(models.ModelForm):
         return qchoices
 
     def get_question_field(self, question, **kwargs):
-        print("Get Question field")
+        print("1.3: ", "Get Question field")
         try:
             print(self.FIELDS[question.type](**kwargs))
             return self.FIELDS[question.type](**kwargs)
@@ -104,15 +137,13 @@ class ResponseForm(models.ModelForm):
             return forms.ChoiceField(**kwargs)
 
     def add_question(self, question, data):
-        print("Add QUESTION")
         my_label = str(question.position) + ". " + question.question_text
         label = my_label + question.description
         kwargs = {"label": label}
 
-        print("Kwargs: ", kwargs)
-        initial = self.get_question_initial(question, data)
-        if initial:
-            kwargs["initial"] = initial
+        # initial = self.get_question_initial(question, data)
+        # if initial:
+        #     kwargs["initial"] = initial
         choices = self.get_question_choices(question)
         if choices:
             kwargs["choices"] = choices
@@ -121,13 +152,12 @@ class ResponseForm(models.ModelForm):
             kwargs["widget"] = widget
         field = self.get_question_field(question, **kwargs)
 
-        print("Kwargs: ", kwargs)
         if question.type == QuestionChoice.DATE:
             field.widget.attrs["class"] = "date"
         self.fields["question_%d" % question.pk] = field
 
     def has_next_step(self):
-        if not self.quiz.is_all_inone_page():
+        if not self.quiz.is_all_in_one_page():
 
             if self.step < self.steps_count - 1:
                 return True
@@ -135,17 +165,25 @@ class ResponseForm(models.ModelForm):
 
     def next_step_url(self):
         if self.has_next_step():
-            context = {"id": self.quiz.id, "step": self.step + 1}
+            context = {"pk": self.quiz.id, "step": self.step + 1}
             return reverse("quiz_detail_step", kwargs=context)
 
     def current_step_url(self):
         context = {"id": self.quiz.id, "step": self.step}
+        print("Current step: ", context)
         return reverse("quiz_detail_step", kwargs=context)
 
+
+        """
     def save(self, commit=True):
+        instance = super(ResponseForm, self).save(commit=False)
+        print("Instance: ", instance)
+        instance.save()
+        return instance
+        response = self.fields
         if self.response is None:
             response = super().save(commit=False)
-        response.quiz = self.quiz
+        print("Response:", response)
         if self.user.is_authenticated:
             response.user = self.user
         response.save()
@@ -164,6 +202,7 @@ class ResponseForm(models.ModelForm):
                 answer.save()
         quiz_completed.send(sender=Response, instance=response, data=data)
         return response
+        """
 
 
 class AnswerForm(forms.ModelForm):

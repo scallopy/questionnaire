@@ -19,5 +19,7 @@ urlpatterns = [
         views.delete_answer, name='delete-answer'),
     path('quizes/', views.QuizesList.as_view(), name='quizes'),
     path('quizes/<int:pk>/', views.QuizDetail.as_view(), name='quiz_detail'),
+    path('quizes/<int:pk>/<int:step>', views.QuizDetail.as_view(), name='quiz_detail_step'),
+    path('quizes/confirm/<int:pk>', views.ConfirmView.as_view(), name="quiz-confirmation"),
     re_path(r'^nested_admin/', include('nested_admin.urls')),
 ]
